@@ -42,6 +42,8 @@ struct Mat4x4
 #define COLS  90
 #define LINES 30
 
+#define SIZE 4
+
 void render(Vector2 p0, Vector2 p1)
 {
 	for (int y = 0; y < LINES; ++y) {
@@ -84,6 +86,35 @@ float dist(Vector2 p0, Vector2 p1)
 	return dist;
 }
 
+void imprimeMatriz(const int (&mat)[SIZE][SIZE])
+{
+    for (int i = 0; i < SIZE; ++i)
+    {
+        for (int j = 0; j < SIZE; ++j)
+        {
+            std::cout << mat[i][j] << " ";
+        }
+        std::cout << "\n";
+    }
+}
+
+void mul(const int (&matA)[SIZE][SIZE], const int (&matB)[SIZE][SIZE], int (&matOut)[SIZE][SIZE])
+{
+    int x, y, z;
+    for (y = 0; y < SIZE; ++y) 
+    {
+        for (x = 0; x < SIZE; ++x) 
+        {
+            matOut[y][x] = 0;
+
+            for (z = 0; z < SIZE; ++z)
+            {
+                matOut[y][x] += matA[y][z] * matB[z][x];
+            }    
+        }
+    }
+}
+
 int main(int, char**)
 {
 	Vector2 vec;
@@ -96,9 +127,29 @@ int main(int, char**)
 	vec2.y = 10.0f;
 
 	// std::cout << "vetao: x: " << vec.x << " y: " << vec.y << "\n";
-	render(vec, vec2);
+	//render(vec, vec2);
 
 	dist(vec, vec2);
+
+    int A[4][4] = {
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    };
+ 
+    int B[4][4] = {
+        1,   2,  3,  4,
+        5,   6,  7,  8,
+        9,  10, 11, 12,
+        13, 14, 15, 16
+    };
+ 
+    int C[4][4];
+
+    mul(A,B,C);
+
+    imprimeMatriz(C);
 }
 
 
