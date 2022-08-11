@@ -1,4 +1,5 @@
 #include <iostream>
+#include <math.h>
 
 struct Vector2
 {
@@ -83,6 +84,8 @@ float dist(Vector2 p0, Vector2 p1)
 	printvec2(p1);
 	printvec2(vec);
 
+    dist = sqrt(pow(vec.x, 2) + pow(vec.y, 2));
+
 	return dist;
 }
 
@@ -124,12 +127,16 @@ int main(int, char**)
 	Vector2 vec2;
 
 	vec2.x = 12.0f;
-	vec2.y = 10.0f;
+	vec2.y = 12.0f;
 
-	// std::cout << "vetao: x: " << vec.x << " y: " << vec.y << "\n";
+	std::cout << "Distancia dos vetao: \n";
 	//render(vec, vec2);
 
-	dist(vec, vec2);
+	const float distancia = dist(vec, vec2);
+    
+    std::cout << "Distancia: " << distancia;
+
+    std::cout << "\n\n --------Multiplicacao de matriz-------- \n\n";
 
     int A[4][4] = {
         1, 0, 0, 0,
