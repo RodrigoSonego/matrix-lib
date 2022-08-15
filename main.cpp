@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 #include <math.h>
 
 struct Vector2
@@ -34,10 +35,42 @@ struct Mat3x3
 
 struct Mat4x4
 {
-	int xs[4];
-	int ys[4];
-	int zs[4];
-	int ws[4];
+private:
+	int mat[4][4] = {
+		{ 1, 0, 0, 0, },
+		{ 0, 1, 0, 0, },
+		{ 0, 0, 1, 0, },
+		{ 0, 0, 0, 1  }
+	};
+
+public:
+	void setRow(int xInd, int row0, int row1, int row2, int row3) {
+		mat[xInd][0] = row0;
+		mat[xInd][1] = row1;
+		mat[xInd][2] = row2;
+		mat[xInd][3] = row3;
+	}
+
+	void set(int xInd, int yInd, int value) {
+		mat[xInd][yInd] = value;
+	}
+
+	int get(int xInd, int yInd) const {
+		return mat[xInd][yInd];
+	}
+
+	void print() const {
+		for (int x = 0; x < 4; ++x)
+		{
+			for (int y = 0; y < 4; ++y)
+			{
+				int curr = mat[x][y];
+				if (curr < 10) std::cout << "0";
+				std::cout << mat[x][y] << " ";
+			}
+			std::cout << "\n";
+		}
+	}
 };
 
 #define COLS  90
@@ -45,20 +78,31 @@ struct Mat4x4
 
 #define SIZE 4
 
-void render(const Vector2 p0, const Vector2 p1)
+void render(const Vector2 &p0, const Vector2 &p1, const Vector2 &q0, const Vector2 &q1)
 {
+	std::cout << "segmento de reta A: vai de 'a' ate 'A', segmento de reta B: vai de 'b' ate 'B' \n";
 	for (int y = 0; y < LINES; ++y) {
 		int p0y = (int) p0.y;
 		int p1y = (int) p1.y;
+
+		int q0y = (int) q0.y;
+		int q1y = (int) q1.y;
 
 		for (int x = 0; x < COLS; ++x) {
 			int p0x = (int) p0.x;
 			int p1x = (int) p1.x;
 			
+			int q0x = (int) q0.x;
+			int q1x = (int) q1.x;
+
 			if (p0y == y && p0x == x) {
-				std::cout << "0";
+				std::cout << "a";
 			} else if (p1y == y && p1x == x) {
-				std::cout << "1";
+				std::cout << "A";
+			} else if (q0y == y && q0x == x) {
+				std::cout << "b";
+			} else if (q1y == y && q1x == x) {
+				std::cout << "B";
 			} else {
 				std::cout << ".";
 			}
@@ -80,9 +124,9 @@ float dist(const Vector2 p0, const Vector2 p1)
 	vec.x = p1.x - p0.x;
 	vec.y = p1.y - p0.y;
 
-std::cout << "a: ";
+	std::cout << "a: ";
 	printvec(p0);
-std::cout << "b: ";
+	std::cout << "b: ";
 	printvec(p1);
 
 	dist = sqrt(pow(vec.x, 2) + pow(vec.y, 2));
@@ -90,34 +134,32 @@ std::cout << "b: ";
 	return dist;
 }
 
-void imprimeMatriz(const int (&mat)[SIZE][SIZE])
-{
-	for (int i = 0; i < SIZE; ++i)
-	{
-		for (int j = 0; j < SIZE; ++j)
-		{
-			std::cout << mat[i][j] << " ";
-		}
-		std::cout << "\n";
-	}
-}
 
-void mul(const int (&matA)[SIZE][SIZE], const int (&matB)[SIZE][SIZE], int (&matOut)[SIZE][SIZE])
+// Mat4x4& mul()
+std::unique_ptr<Mat4x4> mul(const Mat4x4 &matA, const Mat4x4 &matB)
 {
+	std::unique_ptr<Mat4x4> output = std::make_unique<Mat4x4>();
 	int x, y, z;
+	
 	for (y = 0; y < SIZE; ++y) 
 	{
 		for (x = 0; x < SIZE; ++x) 
 		{
-			matOut[y][x] = 0;
+			output->set(y, x, 0);
 
 			for (z = 0; z < SIZE; ++z)
 			{
-				matOut[y][x] += matA[y][z] * matB[z][x];
-			}    
+				int current = output->get(y, x);
+				output->set(y, x, current + matA.get(y, z) * matB.get(z, x));
+			}
 		}
 	}
+
+	return output;
 }
+
+
+
 
 // 0 --> Collinear
 // 1 --> Clockwise
@@ -183,42 +225,33 @@ int main(void)
 	vec4.x = 13.0f;
 	vec4.y = 15.0f;
 
-	std::cout << "Distancia dos vetao: \n";
-	//render(vec, vec2);
+	render(vec1, vec2, vec3, vec4);
 
-	const float distancia = dist(vec1, vec2);	
-	std::cout << "Distancia: " << distancia;
-
+	const float distancia = dist(vec1, vec2);
+	std::cout << "Distancia entre 'a' e 'b': " << distancia;
 	   
     std::cout << "\n\n";
     
     bool intersect = hasIntersection(vec1, vec2, vec3, vec4);
-    std::cout << "Retas " << (intersect ? "se intersectam" : "nao se intersectam");
+    std::cout << "Retas a->A b->B " << (intersect ? "se intersectam" : "nao se intersectam");
+
 
 
 	std::cout << "\n\n --------Multiplicacao de matriz-------- \n\n";
 
-	int matA[4][4] = {
-		1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1
-	};
- 
-	int B[4][4] = {
-		1,   2,  3,  4,
-		5,   6,  7,  8,
-		9,  10, 11, 12,
-		13, 14, 15, 16
-	};
- 
-	int C[4][4];
+	Mat4x4 A;
+	A.setRow(0,      1, 2, 3, 4);
+	A.setRow(1,      5, 6, 7, 8);
+	A.setRow(2,      9, 10, 11, 12);
+	A.setRow(3,      13, 14, 15, 16);
+	
+	Mat4x4 B; // matriz padrão é a matriz de identidade
 
-	mul(matA,B,C);
+	std::unique_ptr<Mat4x4> C = mul(A, B);
 
-	imprimeMatriz(B);
-	std::cout << "X\n";
-	imprimeMatriz(matA);
+	A.print();
+	std::cout << "x\n";
+	B.print();
 	std::cout << "=\n";
-	imprimeMatriz(C);
+	C->print();
 }
